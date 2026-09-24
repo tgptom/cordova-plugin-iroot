@@ -21,8 +21,8 @@ Use this plugin to add an extra layer of security for your app by detecting if t
 |---|---|---|
 | cordova-android 14 (API 35) | ✅ tested via CI build fixture | Root-management package checks require Android package visibility declarations (provided by this plugin). |
 | cordova-android 15 (API 36) | ✅ tested via CI build fixture | Same caveats as above. |
-| cordova-ios 7 | ✅ tested via CI build fixture | Objective-C source updated for modern toolchains. |
-| cordova-ios 8 | ✅ tested via CI build fixture | Uses current Cordova headers/module imports. |
+| cordova-ios 7.x | ✅ tested via CI build fixture | Objective-C source updated for modern toolchains. |
+| cordova-ios 8.x | ✅ tested via CI build fixture | Uses current Cordova headers/module imports. |
 
 ### Toolchain prerequisites
 

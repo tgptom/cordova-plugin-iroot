@@ -10,7 +10,7 @@
 - fix(android): improve package-check reliability on modern Android by directly probing known package names and adding null-safe emulator checks
 - fix(ios): migrate to modern Cordova iOS headers/imports and fix multiple correctness issues (safe file-handle close paths, `lstat/stat` safety, process/socket resource cleanup, simulator macro updates)
 - docs: add compatibility matrix, toolchain prerequisites, and explicit heuristic/bypass limitations
-- ci: add Cordova fixture build checks for Android 14/15 and iOS 7/8
+- ci: add Cordova fixture build checks for Android 14/15 and cordova-ios 7.x/8.x
 
 ### 3.2.1
 
