@@ -37,7 +37,7 @@ public class IRoot extends CordovaPlugin {
                 }
             });
 
-            return false;
+            return true;
         }
 
         switch (cordovaAction) {
@@ -183,7 +183,7 @@ public class IRoot extends CordovaPlugin {
                     }
                 });
 
-                return false;
+                return true;
         }
     }
 
