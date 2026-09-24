@@ -80,4 +80,4 @@ jobs:
           cd "$APP_DIR"
           cordova platform add "ios@${{ matrix.cordova_ios }}"
           cordova plugin add "$GITHUB_WORKSPACE"
-          cordova build ios --simulator --verbose
+          cordova build ios --simulator --target=iPhone-17 --verbose
