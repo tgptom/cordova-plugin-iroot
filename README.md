@@ -56,6 +56,9 @@ IRoot.isRooted(successCallback, failureCallback);
 IRoot.isRootedWithBusyBox(successCallback, failureCallback);
 ```
 
+> Platform note: `IRoot.isRooted()` is the only method implemented on iOS.  
+> The extended detection methods are Android-only.
+
 - `successCallback(result:boolean)` is called with `true` if the device is Jailbroken/rooted, otherwise `false`.
 - `failureCallback(error:string)` is called if there was an error determining if the device is Jailbroken/rooted.
 

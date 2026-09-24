@@ -54,10 +54,19 @@ public class Utils {
 
         try {
             process = Runtime.getRuntime().exec(command);
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-            return in.readLine() != null;
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                 BufferedReader err = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String outputLine = in.readLine();
+                while (err.readLine() != null) {
+                    // consume stream
+                }
+                process.waitFor();
+                return outputLine != null;
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.e(Constants.LOG_TAG, String.format("[canExecuteCommand] Error: %s", e.getMessage()));
+            return false;
         } catch (Exception e) {
             LOG.e(Constants.LOG_TAG, String.format("[canExecuteCommand] Error: %s", e.getMessage()));
 

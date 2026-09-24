@@ -14,6 +14,8 @@
 #include <sys/socket.h>
 #include <mach-o/dyld.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #define NOTJAIL 4783242
 
@@ -64,6 +66,11 @@ enum {
 
 
 @implementation IRoot
+
+static BOOL isSymbolicLinkAtPath(const char *path) {
+    struct stat s;
+    return lstat(path, &s) == 0 && S_ISLNK(s.st_mode);
+}
 
 - (void) isRooted:(CDVInvokedUrlCommand*)command;
 {
@@ -163,10 +170,14 @@ enum {
 
         (f = fopen("/usr/lib/libcycript.dylib", "r"))
         )  {
-        fclose(f);
+        if (f != NULL) {
+            fclose(f);
+        }
         return YES;
     }
-    fclose(f);
+    if (f != NULL) {
+        fclose(f);
+    }
 
 
     NSError *error;
@@ -191,13 +202,14 @@ enum {
     }
 
     //Symbolic link verification
-    struct stat s;
-    if(lstat("/Applications", &s) || lstat("/var/stash/Library/Ringtones", &s) || lstat("/var/stash/Library/Wallpaper", &s)
-       || lstat("/var/stash/usr/include", &s) || lstat("/var/stash/usr/libexec", &s)  || lstat("/var/stash/usr/share", &s) || lstat("/var/stash/usr/arm-apple-darwin9", &s))
-    {
-        if(s.st_mode & S_IFLNK){
-            return YES;
-        }
+    if (isSymbolicLinkAtPath("/Applications")
+        || isSymbolicLinkAtPath("/var/stash/Library/Ringtones")
+        || isSymbolicLinkAtPath("/var/stash/Library/Wallpaper")
+        || isSymbolicLinkAtPath("/var/stash/usr/include")
+        || isSymbolicLinkAtPath("/var/stash/usr/libexec")
+        || isSymbolicLinkAtPath("/var/stash/usr/share")
+        || isSymbolicLinkAtPath("/var/stash/usr/arm-apple-darwin9")) {
+        return YES;
     }
 
     //Try to write file in private
@@ -360,8 +372,13 @@ enum {
 // Fork function is desabled in normal system
 - (int)checkFork {
     @try {
-        int pid = fork();
-        if (pid >= 0) {
+        pid_t pid = fork();
+        if (pid == 0) {
+            _exit(0);
+        }
+        if (pid > 0) {
+            int status = 0;
+            waitpid(pid, &status, 0);
             return KFSystem;
         }
         return NOTJAIL;
@@ -524,8 +541,8 @@ enum {
     @try {
         // See if the Applications folder is a symbolic link
         struct stat s;
-        if (lstat("/Applications", &s) != 0) {
-            if (s.st_mode & S_IFLNK) {
+        if (lstat("/Applications", &s) == 0) {
+            if (S_ISLNK(s.st_mode)) {
                 // Device is jailbroken
                 return KFSymbolic;
             } else
