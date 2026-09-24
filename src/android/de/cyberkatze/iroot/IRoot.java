@@ -20,7 +20,7 @@ public class IRoot extends CordovaPlugin {
 
     private final String ERROR_UNKNOWN_ACTION = "Unknown action";
 
-    private InternalRootDetection internalRootDetection = new InternalRootDetection();
+    private final InternalRootDetection internalRootDetection = new InternalRootDetection();
 
     @Override
     public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -231,7 +231,7 @@ public class IRoot extends CordovaPlugin {
               default: WhatisRooted = this.internalRootDetection.WhatisRooted(action, context);
             }
             boolean toWhatisRooted = WhatisRooted;
-            LOG.e(Constants.LOG_TAG, "[WhatIsRooted] "+action+": " + toWhatisRooted);
+            LOG.d(Constants.LOG_TAG, "[WhatIsRooted] " + action + ": " + toWhatisRooted);
 
             return new PluginResult(Status.OK, toWhatisRooted);
         } catch (Exception error) {
@@ -241,11 +241,9 @@ public class IRoot extends CordovaPlugin {
 
     private PluginResult togetDeviceInfo(final JSONArray args, final CallbackContext callbackContext) {
         try {
-            Context context = this.cordova.getActivity().getApplicationContext();
-
             JSONObject MyDeviceInfo = this.internalRootDetection.togetDeviceInfo();
 
-            LOG.e(Constants.LOG_TAG, "[togetDeviceInfo] MyDeviceInfo: " + MyDeviceInfo.toString());
+            LOG.d(Constants.LOG_TAG, "[togetDeviceInfo] collected");
 
             return new PluginResult(Status.OK, MyDeviceInfo);
         } catch (Exception error) {

@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-iroot",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "description": "Jailbreak/Root Detection Plugin for Apache Cordova",
   "types": "./types/index.d.ts",
   "cordova": {
@@ -34,10 +34,10 @@
   "author": {
     "name": "Elderov Ali",
     "email": "github.wuglyakbolgoink@gmail.com",
-    "url": "https://github.com/WuglyakBolgoink"
+    "url": "https://github.com/tgptom"
   },
   "license": "MIT",
-  "bugs": "https://github.com/WuglyakBolgoink/cordova-plugin-iroot/issues",
-  "homepage": "https://github.com/WuglyakBolgoink/cordova-plugin-iroot#readme",
-  "repository": "github:WuglyakBolgoink/cordova-plugin-iroot"
+  "bugs": "https://github.com/tgptom/cordova-plugin-iroot/issues",
+  "homepage": "https://github.com/tgptom/cordova-plugin-iroot#readme",
+  "repository": "github:tgptom/cordova-plugin-iroot"
 }

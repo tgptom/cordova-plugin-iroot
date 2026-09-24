@@ -2,6 +2,16 @@
 
 ## Version History
 
+### 3.3.0
+
+- bump plugin version to `3.3.0`
+- switch repository metadata and project links to the `tgptom/cordova-plugin-iroot` fork
+- feat(android): upgrade `com.scottyab:rootbeer-lib` to `0.1.2` and add Android 11+ package visibility `<queries>` entries for root-management app checks
+- fix(android): improve package-check reliability on modern Android by directly probing known package names and adding null-safe emulator checks
+- fix(ios): migrate to modern Cordova iOS headers/imports and fix multiple correctness issues (safe file-handle close paths, `lstat/stat` safety, process/socket resource cleanup, simulator macro updates)
+- docs: add compatibility matrix, toolchain prerequisites, and explicit heuristic/bypass limitations
+- ci: add Cordova fixture build checks for Android 14/15 and iOS 7/8
+
 ### 3.2.1
 
 - fix(ios): remove include to sys/ptrace for iOS build [#71](https://github.com/WuglyakBolgoink/cordova-plugin-iroot/pull/71)
