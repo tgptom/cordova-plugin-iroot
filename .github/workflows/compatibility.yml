@@ -1,0 +1,83 @@
+name: Cordova compatibility
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  android-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cordova_android: 14.0.1
+            android_platform: 35
+            build_tools: 35.0.0
+          - cordova_android: 15.0.0
+            android_platform: 36
+            build_tools: 36.0.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager "platform-tools" "platforms;android-${{ matrix.android_platform }}" "build-tools;${{ matrix.build_tools }}"
+
+      - name: Install Cordova CLI
+        run: npm install -g cordova@12
+
+      - name: Build fixture app (android)
+        run: |
+          APP_DIR="$(mktemp -d)"
+          cordova create "$APP_DIR" com.example.iroot.fixture IRootFixture
+          cd "$APP_DIR"
+          cordova platform add "android@${{ matrix.cordova_android }}"
+          cordova plugin add "$GITHUB_WORKSPACE"
+          cordova build android --verbose
+
+  ios-build:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cordova_ios:
+          - 7.1.1
+          - 8.0.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Cordova CLI
+        run: npm install -g cordova@12
+
+      - name: Build fixture app (ios)
+        run: |
+          APP_DIR="$(mktemp -d)"
+          cordova create "$APP_DIR" com.example.iroot.fixture IRootFixture
+          cd "$APP_DIR"
+          cordova platform add "ios@${{ matrix.cordova_ios }}"
+          cordova plugin add "$GITHUB_WORKSPACE"
+          cordova build ios --simulator --verbose

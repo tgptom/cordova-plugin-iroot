@@ -4,9 +4,12 @@
 //  Techniques from http://highaltitudehacks.com/2013/12/17/ios-application-security-part-24-jailbreak-detection-and-evasion/
 //
 
-#import "Cordova/CDV.h"
-#import "Cordova/CDVViewController.h"
+#import <Cordova/CDVPlugin.h>
 #import "IRoot.h"
+#import <TargetConditionals.h>
+#import <errno.h>
+#import <stdlib.h>
+#import <string.h>
 #import <sys/stat.h>
 #import <sys/sysctl.h>
 #include <arpa/inet.h>
@@ -72,7 +75,7 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
     return lstat(path, &s) == 0 && S_ISLNK(s.st_mode);
 }
 
-- (void) isRooted:(CDVInvokedUrlCommand*)command;
+- (void) isRooted:(CDVInvokedUrlCommand*)command
 {
     CDVPluginResult *pluginResult;
 
@@ -96,7 +99,7 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
 
 - (bool) jailbroken {
 
-#if !(TARGET_IPHONE_SIMULATOR)
+#if !TARGET_OS_SIMULATOR
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:@"/Applications/Cydia.app"])
     {
@@ -180,7 +183,7 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
     }
 
 
-    NSError *error;
+    NSError *error = nil;
     NSString *testWriteText = @"Jailbreak test";
     NSString *testWritePath = @"/private/jailbreaktest.txt";
 
@@ -214,6 +217,7 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
 
     //Try to write file in private
 
+    error = nil;
     [[NSString stringWithFormat:@"test string"]
      writeToFile:@"/private/test_jb.txt"
      atomically:YES
@@ -322,9 +326,12 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
 - (int)isDebugged {
     @try {
         struct kinfo_proc info;
+        memset(&info, 0, sizeof(info));
         int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
         size_t size = sizeof(info);
-        sysctl(mib, 4, &info, &size, NULL, 0);
+        if (sysctl(mib, 4, &info, &size, NULL, 0) != 0) {
+            return NOTJAIL;
+        }
         return (info.kp_proc.p_flag & P_TRACED) != 0 ? KFSystem : NOTJAIL;
     }
     @catch (NSException *exception) {
@@ -338,7 +345,7 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
     @try {
         for (uint32_t i = 0; i < _dyld_image_count(); i++) {
             const char *dyld = _dyld_get_image_name(i);
-            if (strstr(dyld, "FridaGadget")) {
+            if (dyld != NULL && strstr(dyld, "FridaGadget") != NULL) {
                 return KFSystem;
             }
         }
@@ -359,8 +366,11 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
         addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
         int sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock < 0) {
+            return NOTJAIL;
+        }
         BOOL isOpen = connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == 0;
-        close(sock);
+        (void)close(sock);
         return isOpen ? KFSystem : NOTJAIL;
     }
     @catch (NSException *exception) {
@@ -378,7 +388,9 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
         }
         if (pid > 0) {
             int status = 0;
-            waitpid(pid, &status, 0);
+            while (waitpid(pid, &status, 0) < 0 && errno == EINTR) {
+                // retry on interrupt
+            }
             return KFSystem;
         }
         return NOTJAIL;
@@ -504,7 +516,10 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
 - (int)fstabCheck {
     @try {
         struct stat sb;
-        stat("/etc/fstab", &sb);
+        memset(&sb, 0, sizeof(sb));
+        if (stat("/etc/fstab", &sb) != 0) {
+            return NOTJAIL;
+        }
         long long size = sb.st_size;
         if (size == 80) {
             // Not jailbroken
@@ -539,19 +554,10 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
 // Symbolic Link available
 - (int)symbolicLinkCheck {
     @try {
-        // See if the Applications folder is a symbolic link
-        struct stat s;
-        if (lstat("/Applications", &s) == 0) {
-            if (S_ISLNK(s.st_mode)) {
-                // Device is jailbroken
-                return KFSymbolic;
-            } else
-                // Not jailbroken
-                return NOTJAIL;
-        } else {
-            // Not jailbroken
-            return NOTJAIL;
+        if (isSymbolicLinkAtPath("/Applications")) {
+            return KFSymbolic;
         }
+        return NOTJAIL;
     }
     @catch (NSException *exception) {
         // Not Jailbroken
@@ -585,6 +591,9 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
     // Make a new size and int of the sysctl calls
     size_t size;
     int st = sysctl(mib, miblen, NULL, &size, NULL, 0);
+    if (st != 0) {
+        return nil;
+    }
 
     // Make new structs for the processes
     struct kinfo_proc * process = NULL;
@@ -651,6 +660,10 @@ static BOOL isSymbolicLinkAtPath(const char *path) {
 
             }
         }
+    }
+
+    if (process != NULL) {
+        free(process);
     }
 
     // If no processes are found, return nothing

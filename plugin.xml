@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<plugin id="cordova-plugin-iroot" version="3.2.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-iroot" version="3.3.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>iRoot</name>
     <author>Elderov Ali (github.wuglyakbolgoink@gmail.com)</author>
 
@@ -8,8 +8,8 @@
 
     <license>MIT</license>
 
-    <repo>https://github.com/WuglyakBolgoink/cordova-plugin-iroot</repo>
-    <issue>https://github.com/WuglyakBolgoink/cordova-plugin-iroot/issues</issue>
+    <repo>https://github.com/tgptom/cordova-plugin-iroot</repo>
+    <issue>https://github.com/tgptom/cordova-plugin-iroot/issues</issue>
 
     <engines>
         <engine name="cordova" version=">=10.0.0"/>
@@ -42,7 +42,27 @@
             </feature>
         </config-file>
 
-        <config-file parent="/*" target="AndroidManifest.xml"/>
+        <config-file parent="/manifest" target="AndroidManifest.xml">
+            <queries>
+                <package android:name="com.noshufou.android.su" />
+                <package android:name="com.thirdparty.superuser" />
+                <package android:name="eu.chainfire.supersu" />
+                <package android:name="com.koushikdutta.superuser" />
+                <package android:name="com.zachspong.temprootremovejb" />
+                <package android:name="com.ramdroid.appquarantine" />
+                <package android:name="eu.chainfire.stickmount" />
+                <package android:name="eu.chainfire.mobileodin.pro" />
+                <package android:name="eu.chainfire.liveboot" />
+                <package android:name="eu.chainfire.pryfi" />
+                <package android:name="eu.chainfire.adbd" />
+                <package android:name="eu.chainfire.recently" />
+                <package android:name="eu.chainfire.flash" />
+                <package android:name="eu.chainfire.stickmount.pro" />
+                <package android:name="eu.chainfire.triangleaway" />
+                <package android:name="org.adblockplus.android" />
+                <package android:name="com.saurik.substrate" />
+            </queries>
+        </config-file>
 
         <source-file src="src/android/de/cyberkatze/iroot/Constants.java" target-dir="src/de/cyberkatze/iroot"/>
         <source-file src="src/android/de/cyberkatze/iroot/CordovaActions.java" target-dir="src/de/cyberkatze/iroot"/>

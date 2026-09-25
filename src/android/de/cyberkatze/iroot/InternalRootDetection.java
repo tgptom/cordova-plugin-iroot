@@ -1,14 +1,12 @@
 package de.cyberkatze.iroot;
 
 import android.content.Context;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
 import org.apache.cordova.LOG;
 
 import java.io.File;
-import java.util.List;
 import org.json.JSONObject;
 import org.json.JSONException;
 
@@ -37,7 +35,7 @@ public class InternalRootDetection {
 
         boolean result = c1 || c2 || c3 || c4 || c5 || c6 || c7;
 
-        LOG.d(Constants.LOG_TAG, String.format("[checkDirPermissions] result: %s", result));
+        LOG.d(Constants.LOG_TAG, String.format("[isRooted] result: %s", result));
 
         return result;
     }
@@ -63,7 +61,7 @@ public class InternalRootDetection {
 
         boolean result = c1 || c2 || c3 || c4 || c5 || c6 || c7 || c8;
 
-        LOG.d(Constants.LOG_TAG, String.format("[checkDirPermissions] result: %s", result));
+        LOG.d(Constants.LOG_TAG, String.format("[isRootedWithEmulator] result: %s", result));
 
         return result;
     }
@@ -218,32 +216,31 @@ public class InternalRootDetection {
      * @param context Used for accessing the package manager.
      */
     private boolean checkInstalledPackages(final Context context) {
+        if (context == null) {
+            return false;
+        }
         final PackageManager pm = context.getPackageManager();
-        final List<PackageInfo> installedPackages = pm.getInstalledPackages(0);
 
         int rootOnlyAppCount = 0;
-
-        for (PackageInfo packageInfo : installedPackages) {
-            final String packageName = packageInfo.packageName;
-
-            if (Constants.BLACKLISTED_PACKAGES.contains(packageName)) {
+        for (String packageName : Constants.BLACKLISTED_PACKAGES) {
+            if (isPackageInstalled(pm, packageName)) {
                 LOG.d(Constants.LOG_TAG, String.format("[checkInstalledPackages] Package [%s] found in BLACKLISTED_PACKAGES", packageName));
 
                 return true;
             }
+        }
 
-            if (Constants.ROOT_ONLY_APPLICATIONS.contains(packageName)) {
+        for (String packageName : Constants.ROOT_ONLY_APPLICATIONS) {
+            if (isPackageInstalled(pm, packageName)) {
                 LOG.d(Constants.LOG_TAG, String.format("[checkInstalledPackages] Package [%s] found in ROOT_ONLY_APPLICATIONS", packageName));
-
                 rootOnlyAppCount += 1;
             }
+        }
 
-            // Check to see if the Cydia Substrate exists.
-            if (Constants.CYDIA_SUBSTRATE_PACKAGE.equals(packageName)) {
-                LOG.d(Constants.LOG_TAG, String.format("[checkInstalledPackages] Package [%s] found in CYDIA_SUBSTRATE_PACKAGE", packageName));
+        if (isPackageInstalled(pm, Constants.CYDIA_SUBSTRATE_PACKAGE)) {
+            LOG.d(Constants.LOG_TAG, String.format("[checkInstalledPackages] Package [%s] found in CYDIA_SUBSTRATE_PACKAGE", Constants.CYDIA_SUBSTRATE_PACKAGE));
 
-                rootOnlyAppCount += 1;
-            }
+            rootOnlyAppCount += 1;
         }
 
         LOG.d(Constants.LOG_TAG, String.format("[checkInstalledPackages] count of root-only apps: %s", rootOnlyAppCount));
@@ -307,16 +304,15 @@ public class InternalRootDetection {
      * @see <a href="https://github.com/testmandy/NativeAdLibrary-master/blob/68e1a972fc746a0b51395f813f5bcf32fd619376/library/src/main/java/me/dt/nativeadlibary/util/RootUtil.java#L59">testmandy RootUtil.java</a>
      */
      public boolean isRunningOnEmulator() {
-         Utils.getDeviceInfo();
-         boolean simpleCheck = Build.MODEL.contains("Emulator")
+         boolean simpleCheck = contains(Build.MODEL, "Emulator")
              // ||Build.FINGERPRINT.startsWith("unknown") // Meizu Mx Pro will return unknown, so comment it!
-             || Build.MODEL.contains("Android SDK built for x86")
-             || Build.BOARD.equals("QC_Reference_Phone") //bluestacks
-             || Build.HOST.startsWith("Build"); //MSI App Player
+             || contains(Build.MODEL, "Android SDK built for x86")
+             || equals(Build.BOARD, "QC_Reference_Phone") //bluestacks
+             || startsWith(Build.HOST, "Build"); //MSI App Player
 
-         boolean checkGenymotion = Build.MANUFACTURER.contains("Genymotion");
-         boolean checkGeneric = Build.FINGERPRINT.startsWith("generic") || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"));
-         boolean checkGoogleSDK = Build.MODEL.contains("google_sdk") || "google_sdk".equals(Build.PRODUCT);
+         boolean checkGenymotion = contains(Build.MANUFACTURER, "Genymotion");
+         boolean checkGeneric = startsWith(Build.FINGERPRINT, "generic") || (startsWith(Build.BRAND, "generic") && startsWith(Build.DEVICE, "generic"));
+         boolean checkGoogleSDK = contains(Build.MODEL, "google_sdk") || equals(Build.PRODUCT, "google_sdk");
 
          boolean result = simpleCheck || checkGenymotion || checkGeneric || checkGoogleSDK;
 
@@ -337,24 +333,23 @@ public class InternalRootDetection {
 
      public boolean WhatisRunningOnEmulator(final String action) {
 
-         Utils.getDeviceInfo();
          boolean result = false;
 
          switch (action) {
-           case "simpleCheckEmulator": result = Build.MODEL.contains("Emulator");
-           break;
-           case "simpleCheckSDKBF86": result = Build.MODEL.contains("Android SDK built for x86");
-           break;
-           case "simpleCheckQRREFPH": result = Build.BOARD.equals("QC_Reference_Phone");
-           break;
-           case "simpleCheckBuild": result = Build.HOST.startsWith("Build");
-           break;
-           case "checkGenymotion": result = Build.MANUFACTURER.contains("Genymotion");
-           break;
-           case "checkGeneric": result = Build.FINGERPRINT.startsWith("generic") || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"));
-           break;
-           case "checkGoogleSDK": result = Build.MODEL.contains("google_sdk") || "google_sdk".equals(Build.PRODUCT);
-           break;
+          case "simpleCheckEmulator": result = contains(Build.MODEL, "Emulator");
+          break;
+          case "simpleCheckSDKBF86": result = contains(Build.MODEL, "Android SDK built for x86");
+          break;
+          case "simpleCheckQRREFPH": result = equals(Build.BOARD, "QC_Reference_Phone");
+          break;
+          case "simpleCheckBuild": result = startsWith(Build.HOST, "Build");
+          break;
+          case "checkGenymotion": result = contains(Build.MANUFACTURER, "Genymotion");
+          break;
+          case "checkGeneric": result = startsWith(Build.FINGERPRINT, "generic") || (startsWith(Build.BRAND, "generic") && startsWith(Build.DEVICE, "generic"));
+          break;
+          case "checkGoogleSDK": result = contains(Build.MODEL, "google_sdk") || equals(Build.PRODUCT, "google_sdk");
+          break;
          }
          return result;
      }
@@ -392,5 +387,32 @@ public class InternalRootDetection {
     //        }
     //        return false;
     //    }
+ 
+    private boolean isPackageInstalled(final PackageManager pm, final String packageName) {
+       try {
+           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+               pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0));
+           } else {
+               pm.getPackageInfo(packageName, 0);
+           }
+           return true;
+       } catch (PackageManager.NameNotFoundException ignored) {
+           return false;
+       } catch (Exception error) {
+           LOG.d(Constants.LOG_TAG, String.format("[checkInstalledPackages] Unable to inspect package [%s]: %s", packageName, error.getMessage()));
+           return false;
+       }
+    }
 
+    private boolean contains(final String value, final String token) {
+       return value != null && value.contains(token);
+    }
+
+    private boolean startsWith(final String value, final String token) {
+       return value != null && value.startsWith(token);
+    }
+
+    private boolean equals(final String value, final String token) {
+       return token.equals(value);
+    }
 }

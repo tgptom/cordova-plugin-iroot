@@ -13,6 +13,24 @@ Jailbreak/Root Detection Plugin for Apache Cordova
 
 Use this plugin to add an extra layer of security for your app by detecting if the device was `root`ed (on android) or `jailbreak`ed (on iOS).
 
+> Detection is heuristic and can be bypassed by modern root/jailbreak hiding or runtime hooking tools. Do not treat plugin results as tamper-proof.
+
+## Compatibility
+
+| Platform | Status | Notes |
+|---|---|---|
+| cordova-android 14 (API 35) | ✅ tested via CI build fixture | Root-management package checks require Android package visibility declarations (provided by this plugin). |
+| cordova-android 15 (API 36) | ✅ tested via CI build fixture | Same caveats as above. |
+| cordova-ios 7.x | ✅ tested via CI build fixture | Objective-C source updated for modern toolchains. |
+| cordova-ios 8.x | ✅ tested via CI build fixture | Uses current Cordova headers/module imports. |
+
+### Toolchain prerequisites
+
+- Node.js 20+
+- Cordova CLI 12+
+- Android: JDK 17 and Android SDK platforms 35/36
+- iOS: Xcode 16+ and CocoaPods/Swift Package Manager support provided by cordova-ios
+
 ## Install
 
 ```bash
@@ -107,12 +125,12 @@ Based on:
 5. Frida detect
 5. Magestic detect
 
-[license-shield]:https://img.shields.io/github/license/WuglyakBolgoink/cordova-plugin-iroot?style=flat
+[license-shield]:https://img.shields.io/github/license/tgptom/cordova-plugin-iroot?style=flat
 
 [buymecoffee-link]: https://www.buymeacoffee.com/aesaythx?style=flat
 [buymecoffee-shield]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=flat
 
-[version-shield]: https://img.shields.io/github/package-json/v/WuglyakBolgoink/cordova-plugin-iroot?color=green
+[version-shield]: https://img.shields.io/github/package-json/v/tgptom/cordova-plugin-iroot?color=green
 
 [android-shield]: https://img.shields.io/badge/cordova-android-green.svg?style=flat&logo=apache-cordova
 [cordova-android-link]: https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html
